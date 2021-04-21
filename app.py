@@ -3,7 +3,9 @@ from sqlalchemy.ext.automap import automap_base
 from sqlalchemy.orm import Session
 from sqlalchemy import create_engine, func
 
-from flask import Flask, jsonify
+from flask import Flask, jsonify, render_template, redirect, send_from_directory
+
+import os
 
 from db_info import db_user, db_password, db_name
 
@@ -27,26 +29,38 @@ Supermarket = Base.classes.supermarket
 #################################################
 app = Flask(__name__)
 
+ver_str = "/v1.0"
+
 
 #################################################
 # Flask Routes
 #################################################
 
 #
-# Base route, API specs
+# Base route for index page
 #
 
-
-@app.route("/v1.0")
+@app.route("/")
 def welcome():
+    return render_template("index.html")
+
+#
+# Show API routes
+#
+
+@app.route(f"{ver_str}")
+def api_base():
     """List all available api routes."""
     return (
         f"Available Routes:<br/>"
-        f"/v1.0/<br/>"
-        f"/v1.0/products<br/>"
+        f"{ver_str}<br/>"
+        f"{ver_str}/products<br/>"
     )
+#
+# Get a list of products
+#
 
-@app.route("/v1.0/products")
+@app.route(f"{ver_str}/products")
 def products():
     # Get the measure scores
     # Create session (link) from Python to the DB
@@ -70,6 +84,24 @@ def products():
 
     return jsonify(products)
 
+#
+# Get count of invoices by gender
+#
+
+@app.route(f"{ver_str}/genderinvoices")
+def gender_invoices():
+    return jsonify({})
+
+
+#
+# Add favicon
+#
+
+
+@app.route('/favicon.ico')
+def favicon():
+    return send_from_directory(os.path.join(app.root_path, 'static/images'),
+                               'favicon.ico', mimetype='image/vnd.microsoft.icon')
 # main program
 if __name__ == '__main__':
     app.run(debug=True)
